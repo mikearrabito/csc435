@@ -5,6 +5,7 @@ import tkinter as tk
 import random
 import math
 
+
 def gethammingcode(code):
     n = len(code)
     r = calcnumcheckbits(len(code))
@@ -15,7 +16,7 @@ def gethammingcode(code):
             hammingcode += str(0)
         else:
             hammingcode += c
-
+    
     for i in range(r):
         parity = 0
         for j in range(1, n + 1):
@@ -24,6 +25,21 @@ def gethammingcode(code):
             hammingcode = hammingcode[:n - (2 ** i)] + str(parity) + hammingcode[n - (2 ** i) + 1:]
 
     return hammingcode
+
+
+def checkforerror(code):
+    n = len(code)
+    nr = calcnumcheckbits(len(sentdata))
+    res = 0
+
+    for i in range(nr):
+        val = 0
+        for j in range(1, n + 1):
+            if (j & (2 ** i) == (2 ** i)):
+                val = val ^ int(code[-1 * j])
+
+        res += val * (10 ** i)
+    return int(str(res), 2)
 
 
 def send(data):
@@ -69,23 +85,6 @@ def getcheckcode(code):
             charindex += 1
         i += 1
     return result
-
-
-def checkforerror(code):
-    n = len(code)
-    nr = calcnumcheckbits(len(sentdata))
-    res = 0
-
-    # Calculate parity bits again
-    for i in range(nr):
-        val = 0
-        for j in range(1, n + 1):
-            if (j & (2 ** i) == (2 ** i)):
-                val = val ^ int(code[-1 * j])
-
-        res = res + val * (10 ** i)
-
-    return int(str(res), 2)
 
 
 def calcnumcheckbits(m):
@@ -143,21 +142,20 @@ def inputbuttonclick(input):
         error = checkforerror(sentdata)
         if error == 0:
             errorlabel.config(text='No error detected')
+            reclabel.config(text='Received data bits: ' + getdata(sentdata))
         else:
-            errorlabel.config(text='Error detected at bit: ' + str(error))
+            errorlabel.config(text='Error detected at bit: ' + str(error))  # error bit is # from the right
     if input == 6:
-        correctlabel.config(text='Correct code: ' + correctcode(sentdata))
-        reclabel.config(text='Received data after correction: ' + getdata(correctcode(sentdata)))
+        correctlabel.config(text='Corrected code: ' + correctcode(sentdata))
+        reclabel.config(text='Received data bits after correction: ' + getdata(correctcode(sentdata)))
     return
 
 
 root = tk.Tk()
 root.title("Hamming Code App")
 
-w = tk.Canvas(root, width=600, height=750)
-
 e1 = tk.Entry(root, width=5)
-e1.grid(row=3, column=0)
+e1.grid(row=2, column=0)
 
 
 e1button = tk.Button(root, text="Click to set number of data bits", command=lambda: inputbuttonclick(1))
@@ -166,7 +164,7 @@ e3button = tk.Button(root, text="Generate random code to be sent", command=lambd
 e4button = tk.Button(root, text="Send without error", command=lambda: inputbuttonclick(4))
 e5button = tk.Button(root, text="Check for error", command=lambda: inputbuttonclick(5))
 e6button = tk.Button(root, text="Correct error", command=lambda: inputbuttonclick(6))
-e1button.grid(row=2, column=0)
+e1button.grid(row=3, column=0)
 e2button.grid(row=9, column=0)
 e3button.grid(row=4, column=0)
 e4button.grid(row=8, column=0)
@@ -175,8 +173,8 @@ e6button.grid(row=8, column=1)
 
 numDataBits = 7
 numCheckBits = 4
-data = "" # Data to encode and send
-sentdata = "" # Data received
+data = ""  # Data to encode and send
+sentdata = ""  # Data received
 
 databitslabel = tk.Label(root, text='Number of data bits: ' + str(numDataBits))
 checkbitslabel = tk.Label(root, text='Number of check bits: ' + str(numCheckBits))
@@ -185,7 +183,7 @@ checkcodelabel = tk.Label(root, text='Check Bits: ')
 hammingcodelabel = tk.Label(root, text='Hamming Code: ')
 receivedlabel = tk.Label(root, text='Data received: ')
 correctlabel = tk.Label(root, text='Corrected code: ')
-reclabel = tk.Label(root, text='Received data after correction: ')
+reclabel = tk.Label(root, text='Received data bits: ')
 errorlabel = tk.Label(root)
 databitslabel.grid(row=0, column=0)
 checkbitslabel.grid(row=0, column=1)
