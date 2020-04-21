@@ -1,3 +1,4 @@
+  
 /*
 CSC 435 Midterm Project
 Michael Arrabito, Shane Drucker
@@ -10,8 +11,8 @@ Michael Arrabito, Shane Drucker
 #include <iomanip>
 
 void fillData(std::map<int, std::map<std::string, float>>& datasets);
-void dataSimDataLayer(std::map<int, std::map<std::string, float>>& datasets, int frameCost, int errCost, int packetCost);
-void dataSimTcp(std::map<int, std::map<std::string, float>>& datasets, int frameCost, int errCost, int packetCost);
+void dataSimDataLayer(std::map<int, std::map<std::string, float>>& datasets, int frameCost, int errCost, int packetCost, bool);
+void dataSimTcp(std::map<int, std::map<std::string, float>>& datasets, int frameCost, int errCost, int packetCost, bool);
 
 int main() {
 	std::map<int, std::map<std::string, float>> datasets;
@@ -25,21 +26,20 @@ int main() {
 	srand(time(NULL)); // randomnize numbers
 
 	std::cout << "Case 1:\nData layer error checking simulation:\n";
-	dataSimDataLayer(datasets, frameCost, errChkDataLayer, packetCost);
+	dataSimDataLayer(datasets, frameCost, errChkDataLayer, packetCost, false);
 	std::cout << "\nTCP layer error checking simulation:\n";
-	dataSimTcp(datasets, frameCost, errChkTcpLayer, packetCost);
+	dataSimTcp(datasets, frameCost, errChkTcpLayer, packetCost, false);
 
 	// In case 2, above values are the same, but probability is constant 0.001 and packetsize is 10
-
 	std::cout << "\nCase 2:\nData layer error checking simulation:\n";
-	// finish case 2
-	std::cout << "\nTCP layer error checking simulation:\n";
-
+    dataSimDataLayer(datasets, frameCost, errChkDataLayer, packetCost, true);
+    std::cout << "\nTCP layer error checking simulation:\n";
+    dataSimTcp(datasets, frameCost, errChkTcpLayer, packetCost, true);
 
 	return 0;
 }
 
-void dataSimDataLayer(std::map<int, std::map<std::string, float>>& datasets, int frameCost, int errCost, int packetCost) {
+void dataSimDataLayer(std::map<int, std::map<std::string, float>>& datasets, int frameCost, int errCost, int packetCost, bool bFlag) {
 
 	for (int curSet = 1; curSet <= 10; curSet++) {
 		// for each dataset
@@ -48,12 +48,18 @@ void dataSimDataLayer(std::map<int, std::map<std::string, float>>& datasets, int
 
 		for (int packet = 0; packet < 100; packet++) {
 			// for each packet ( send 100 packets per dataset)
-
-			for (int frame = 0; frame < datasets[curSet]["packetSize"]; frame++) {
+            int numFrames = datasets[curSet]["packetSize"];
+            if(bFlag == true){
+                numFrames = 10;
+            }
+			for (int frame = 0; frame < numFrames; frame++) {
 				// for each frame (send packetSize number of frames per packet)
 
 				float probability = rand() % 100; // probabilty from 0 - 99
 				float curSetProb = datasets[curSet]["probability"] * 100;
+                if(bFlag == true){
+                    curSetProb = 0.001 * 100; // probability for data set b
+                }
 
 				totalCost += errCost;// cost for error checking frame
 
@@ -83,7 +89,7 @@ void dataSimDataLayer(std::map<int, std::map<std::string, float>>& datasets, int
 	return;
 }
 
-void dataSimTcp(std::map<int, std::map<std::string, float>>& datasets, int frameCost, int errCost, int packetCost) {
+void dataSimTcp(std::map<int, std::map<std::string, float>>& datasets, int frameCost, int errCost, int packetCost, bool bFlag) {
 
 	for (int curSet = 1; curSet <= 10; curSet++) {
 		// for each dataset
@@ -92,15 +98,21 @@ void dataSimTcp(std::map<int, std::map<std::string, float>>& datasets, int frame
 
 		for (int packet = 0; packet < 100; packet++) {
 			// for each packet ( send 100 packets per dataset)
-
+            int numFrames = datasets[curSet]["packetSize"];
+            if(bFlag == true){
+                numFrames = 10;
+            }
 			totalCost += errCost; // cost to check for error at packet levelg
 
-			for (int frame = 0; frame < datasets[curSet]["packetSize"]; frame++) {
+			for (int frame = 0; frame < numFrames; frame++) {
 				// for each frame (send packetSize number of frames per packet)
 
 				float probability = rand() % 100; // probabilty from 0 - 99
 				float curSetProb = datasets[curSet]["probability"] * 100;
-
+                if(bFlag == true){
+                    curSetProb = 0.001 * 100; // probability for data set b
+                }
+                
 				if (probability < curSetProb) {
 					// we have an error with a frame, resend whole packet
 
